@@ -1,0 +1,61 @@
+---
+- hosts: all
+  remote_user: cumulus
+  become: yes
+  gather_facts: False
+  serial: 1
+  vars:
+    ansible_user: "cumulus"
+    ansible_ssh_pass: "CumulusLinux!"
+    ansible_become_pass: "CumulusLinux!"
+
+  tasks:
+#  - name: Copy CL image to switch
+#    copy: src=CumulusLinux-2.5.10-amd64.bin dest=/root/CumulusLinux-2.5.10-amd64.bin
+#  - name: Copy CL image to switch
+#    get_url:
+#      url: http://mon/release/CumulusLinux-2.5.10-amd64.bin
+#      dest: /root/CumulusLinux-2.5.10-amd64.bin
+
+#  - name: Install new image into the alternate slot
+#    shell: cl-img-install -f /root/CumulusLinux-2.5.10-amd64.bin
+
+  - name: Verify the 2.5.10 image is installed into alternative slot
+    shell: cl-img-select -d | grep 2.5.10 -c
+    register: check_version
+    failed_when: "check_version == 0"
+
+  - name: Load the 2.5.10 image into the slot
+    shell: cl-img-select -s
+
+  - name: Verify the 2.5.10 image is selected for installation
+    shell: cl-img-select -d | grep 2.5.10 | grep primary -c
+    register: check_primary
+    failed_when: "check_primary == 0"
+
+#- name: Set switch maintenance
+#  shell: {{item}}
+#  with_items:
+#    - { "vtysh -c 'conf t' -c 'route-map maintenance permit 100' -c 'set as-path prepend 65535 65535 65535 65535'" }
+
+  - name: reboot switch to load 2.5.10 image
+    shell: reboot
+    async: 0
+    poll: 0
+    ignore_errors: true
+
+  # - pause: seconds=10
+  # - name: remove local instance of known_hosts file
+  #  local_action: shell rm /home/cumulus/.ssh/known_hosts
+
+  - name: waiting for switch to come back
+    local_action: wait_for host={{ inventory_hostname }} port=22 delay=120 timeout=120 state=started
+    become: False
+    # wait_for: host={{ ansible_host }} port=22
+    # shell: lsb_release -a
+
+  # - local_action: shell ansible -u cumulus -m ping {{ inventory_hostname }}
+  #   register: result
+  #   until: result.rc == 0
+  #   retries: 30
+  #   delay: 10
