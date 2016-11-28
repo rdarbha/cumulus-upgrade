@@ -1,0 +1,24 @@
+---
+- hosts: rack01
+  remote_user: cumulus
+  become: yes
+  gather_facts: False
+  vars:
+    ansible_user: "cumulus"
+    ansible_ssh_pass: "CumulusLinux!"
+    ansible_become_pass: "CumulusLinux!"
+  tasks:
+    - name: running nested playbook
+      include: debug.yml
+
+- hosts: rack02
+  remote_user: cumulus
+  become: yes
+  gather_facts: False
+  vars:
+    ansible_user: "cumulus"
+    ansible_ssh_pass: "CumulusLinux!"
+    ansible_become_pass: "CumulusLinux!"
+  tasks:
+    - name: running nested playbook
+      include: debug.yml

@@ -1,24 +1,13 @@
 ---
-- hosts: all
-  remote_user: cumulus
-  become: yes
-  gather_facts: False
-  serial: 1
-  vars:
-    ansible_user: "cumulus"
-    ansible_ssh_pass: "CumulusLinux!"
-    ansible_become_pass: "CumulusLinux!"
+  - name: Copy CL image to switch
+    copy: src=CumulusLinux-2.5.10-amd64.bin dest=/root/CumulusLinux-2.5.10-amd64.bin
+  - name: Copy CL image to switch
+    get_url:
+      url: http://mon/release/CumulusLinux-2.5.10-amd64.bin
+      dest: /root/CumulusLinux-2.5.10-amd64.bin
 
-  tasks:
-#  - name: Copy CL image to switch
-#    copy: src=CumulusLinux-2.5.10-amd64.bin dest=/root/CumulusLinux-2.5.10-amd64.bin
-#  - name: Copy CL image to switch
-#    get_url:
-#      url: http://mon/release/CumulusLinux-2.5.10-amd64.bin
-#      dest: /root/CumulusLinux-2.5.10-amd64.bin
-
-#  - name: Install new image into the alternate slot
-#    shell: cl-img-install -f /root/CumulusLinux-2.5.10-amd64.bin
+  - name: Install new image into the alternate slot
+    shell: cl-img-install -f /root/CumulusLinux-2.5.10-amd64.bin
 
   - name: Verify the 2.5.10 image is installed into alternative slot
     shell: cl-img-select -d | grep 2.5.10 -c
